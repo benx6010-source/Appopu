@@ -1,0 +1,57 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+html,body{margin:0;height:100%;background:transparent;overflow:hidden}
+#cloud{position:absolute;left:50%;bottom:8%;width:70%;transform:translateX(-50%);display:none;animation:bob 3.2s ease-in-out infinite;filter:drop-shadow(0 14px 18px rgba(40,90,170,.35))}
+#cloud.talk{animation:talk .35s ease-in-out infinite alternate}
+#cloud.think{animation:think 1.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateX(-50%) translateY(-12px)}}
+@keyframes talk{to{transform:translateX(-50%) translateY(-6px) scale(1.05,.96)}}
+@keyframes think{50%{transform:translateX(-50%) rotate(4deg)}}
+canvas{width:100%;height:100%;display:block}
+#ring{position:absolute;inset:auto 0 2%;margin:auto;width:36%;height:10px;border-radius:50%;background:radial-gradient(#7cc4ff88,transparent 70%);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.4;transform:scale(1.25)}}
+</style></head>
+<body>
+<div id="ring"></div>
+<img id="cloud" src="/assets/web/cloud.png" alt="Opu">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script>
+window.state='idle';
+window.setState=function(s){window.state=s;var c=document.getElementById('cloud');c.className=s==='talk'?'talk':s==='think'?'think':''};
+</script>
+<script type="module">
+const cloud=document.getElementById('cloud');
+async function start(){
+  let has=false;
+  try{const r=await fetch('/model/model.glb',{method:'HEAD'});has=r.ok}catch(e){}
+  if(!has){cloud.style.display='block';return}
+  try{
+    const THREE=await import('three');
+    const {GLTFLoader}=await import('three/addons/loaders/GLTFLoader.js');
+    const r=new THREE.WebGLRenderer({alpha:true,antialias:true});r.setPixelRatio(Math.min(devicePixelRatio,2));r.setClearColor(0,0);
+    document.body.appendChild(r.domElement);
+    const scene=new THREE.Scene(),cam=new THREE.PerspectiveCamera(30,1,.1,100);
+    scene.add(new THREE.HemisphereLight(0xffffff,0x8899aa,1.4));
+    const k=new THREE.DirectionalLight(0xffffff,1.6);k.position.set(2,4,5);scene.add(k);
+    function size(){const w=innerWidth,h=innerHeight;r.setSize(w,h);cam.aspect=w/h;cam.updateProjectionMatrix()}size();addEventListener('resize',size);
+    new GLTFLoader().load('/model/model.glb',g=>{
+      const m=g.scene;const box=new THREE.Box3().setFromObject(m);const sz=box.getSize(new THREE.Vector3()),c=box.getCenter(new THREE.Vector3());
+      const s=2.2/Math.max(sz.y,0.001);m.scale.setScalar(s);m.position.sub(c.multiplyScalar(s));m.position.y+=0;
+      const holder=new THREE.Group();holder.add(m);scene.add(holder);
+      cam.position.set(0,0.35,5.2);cam.lookAt(0,0.15,0);
+      let mixer=null;if(g.animations&&g.animations.length){mixer=new THREE.AnimationMixer(m);mixer.clipAction(g.animations[0]).play()}
+      const clock=new THREE.Clock();
+      (function loop(){requestAnimationFrame(loop);const dt=clock.getDelta(),t=clock.elapsedTime;if(mixer)mixer.update(dt);
+        const talk=window.state==='talk',think=window.state==='think';
+        holder.rotation.y=Math.sin(t*.6)*.25;
+        holder.position.y=Math.sin(t*1.6)*.03+(talk?Math.abs(Math.sin(t*9))*.04:0);
+        holder.rotation.z=think?Math.sin(t*2)*.06:0;
+        r.render(scene,cam)})();
+    },undefined,()=>{r.domElement.remove();cloud.style.display='block'});
+  }catch(e){cloud.style.display='block'}
+}
+start();
+</script>
+</body></html>

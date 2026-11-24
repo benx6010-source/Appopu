@@ -1,0 +1,17 @@
+Create these folders in your GitHub repo and put each file exactly here.
+(On GitHub: Add file -> Create new file, type the path with slashes to make folders; for the two .png files use Upload files into the right folder.)
+
+/settings.gradle.kts            <- settings.gradle.kts
+/build.gradle.kts               <- ROOT_build.gradle.kts   (rename: remove "ROOT_")
+/gradle.properties              <- gradle.properties
+/README.txt                     <- README.txt
+/.github/workflows/build.yml    <- build.yml
+/app/build.gradle.kts           <- APP_build.gradle.kts    (rename: remove "APP_")
+/app/src/main/AndroidManifest.xml            <- AndroidManifest.xml
+/app/src/main/res/xml/accessibility_config.xml <- accessibility_config.xml
+/app/src/main/res/values/strings.xml         <- strings.xml
+/app/src/main/res/values/themes.xml          <- themes.xml
+/app/src/main/res/drawable/ic_launcher.png   <- ic_launcher.png
+/app/src/main/assets/web/index.html          <- index.html
+/app/src/main/assets/web/cloud.png           <- cloud.png
+/app/src/main/java/com/axter/opu/Store.kt, Brain.kt, Voice.kt, Overlay.kt, CameraShot.kt, Agent.kt, OpuService.kt, MainActivity.kt, OpuAccess.kt  <- the .kt files
